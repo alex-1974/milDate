@@ -5,8 +5,8 @@
 \usepackage{booktabs}
 
 \usepackage{polyglossia}
-\setmainlanguage[babelshorthands=true]{german}
-\setotherlanguage[variant=british]{english}
+\setmainlanguage[variant=british]{english}
+\setotherlanguage[babelshorthands=true]{german}
 
 \defaultfontfeatures{Scale=MatchLowercase}
 \setmainfont[Ligatures=TeX]{Linux Libertine O}
@@ -54,15 +54,38 @@ For example the moon landing on July 21th 1969 at 02:56 is represented in the da
 \fcolorbox{sunset}{sunset!5!white}{56} indicates the time 02:56 with \par\medskip
 \fcolorbox{grass}{grass!5!white}{Z} as the corresponding timezone Zulu\par\medskip
 
+The date alone
+
+\par\begin{center}
+\fcolorbox{denim}{denim!5!white}{21}
+\fcolorbox{denim}{denim!5!white}{jul}
+\fcolorbox{denim}{denim!5!white}{69}
+\end{center}\par
+
+respectively the time
+
+\par\begin{center}
+\fcolorbox{sunset}{sunset!5!white}{02}
+\fcolorbox{sunset}{sunset!5!white}{56}
+\fcolorbox{grass}{grass!5!white}{Z}
+\end{center}\par
+
 \section{Options}
+
+The \textbf{milDate} package can be customized by global options.
+
+\verb+\usepackage[lang=german,kern=0pt]{milDate}+
 
 \noindent\marginpar{lang} The \textbf{milDate} package identifies the language used and sets the month names accordingly. The behavior can be overridden by setting the \verb+lang+ option.
 Currently german and english are available.
+
+\noindent\marginpar{kern} The individual blocks of the date-time group are set with a small space between them. By default, the \textbf{milDate} package uses 1pt. This spacing can be changed with the \verb+kern+ option if needed. A \emph{kern} is a typographic term for a nonbreakable space between two elements.
 
 \section{Commands}
 
 \noindent\marginpar{milDate} The \textbf{milDate} command sets the date consisting of day, month, year. It can be specified in the format \emph{dd-mm-yyyy} or in the ISO format \emph{yyyy-mm-dd}. For clear distinction, years should be specified with four digits. All non-numeric characters can be used as delimiter.
 It is run through a simple validity check, where days range from 1 to 31 and months from 01 to 12.
+
 \par\medskip
 \begin{tabular}{ll}
 \verb+\milDate{08.12.1980}+ & \milDate{08.12.1980} \\
@@ -71,7 +94,12 @@ It is run through a simple validity check, where days range from 1 to 31 and mon
 \verb+\milDate{2008.11.4}+ 	& \milDate{2008.11.4} \\	% Barack Obama elected
 \end{tabular}
 
-\medskip\noindent\marginpar{milTime} The \textbf{milTime} command
+\medskip\noindent\marginpar{milTime} The \textbf{milTime} command sets the time in 24 hour format hhmm without delimiter.
+
+\par\medskip
+\begin{tabular}{ll}
+\verb+\milTime{12:30}[S]+ & \milTime{12:30}[S] \\	% JFK assassinated
+\end{tabular}
 
 \medskip\noindent\marginpar{timezone} Time zones are indicated with letters A to I and K to Z. To avoid confusion, J is skipped. Starting from the prime meridian at Greenwich (UTC-0, Greenwich Mean Time \emph{GMT}, Zulu time), counting is eastward from A to M and westward from N to Y.
 
@@ -120,9 +148,10 @@ UTC & & Example \\
 
 \par\medskip
 \begin{tabular}{ll}
-\verb+\milDatetime{08.12.1980}+ & \milDate{08.12.1980} \\
-\verb+\milDatetime{10/05/1994}+ & \milDate{10/05/1994} \\ 	% Nelson Mandela sworn in as first black president
-\verb+\milDatetime{4-7-97}+ 	& \milDate{4-7-97} \\		% Mars Pathfinder lands on Mars
-\verb+\milDatetime{2008.11.4}+ 	& \milDate{2008.11.4} \\	% Barack Obama elected
+\verb+\milDatetime{02.09.1966}{01:00}+		& \milDatetime{02.09.1966}{01:00} \\	% Great fire of London starts
+\verb+\milDatetime{26/4/1986}{01:24}+		& \milDatetime{26/4/1986}{01:24} \\ 	% Explosion at Chernobyl
+\verb+\milDatetime{1972-06-17}[R]{01:47}+	& \milDatetime{1972-06-17}[R]{01:47} \\	% Watergate burglars arrested
+\verb+\milDatetime{1963/8/8}{03:15}+		& \milDatetime{1963/8/8}{03:15} \\		% Great Train Robbery
+
 \end{tabular}
 \end{document}
