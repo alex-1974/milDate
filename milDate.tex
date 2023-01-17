@@ -1,0 +1,157 @@
+\documentclass[a4paper,10pt]{scrarticle}
+\usepackage{fontspec}
+\usepackage[lang=english]{milDate}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+\usepackage{polyglossia}
+\setmainlanguage[variant=british]{english}
+\setotherlanguage[babelshorthands=true]{german}
+
+\defaultfontfeatures{Scale=MatchLowercase}
+\setmainfont[Ligatures=TeX]{Linux Libertine O}
+\setsansfont[Ligatures=TeX]{Linux Biolinum O}
+
+\definecolor{grass}{HTML}{38A808}
+\definecolor{denim}{HTML}{0009A8}
+\definecolor{sunset}{HTML}{F55D18}
+
+\setlength{\parindent}{0pt}
+\reversemarginpar
+
+\newcommand\alphabet{abcdefghijklmnopqrstuvwxyz}
+\newlength{\charwidth}
+\settowidth{\charwidth}{\alphabet}
+\setlength{\textwidth}{2.7\charwidth}
+
+\title{\textnormal{The \textbf{milDate} Package}}
+\author{Alexander Bernardi}
+%\date{\milDate{17.01.2023}}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+The \textbf{milDate} Package provides commands for displaying the date and time in NATO format.\par
+The format is used to standardize the communication of dates.
+A Date-Time-Group consists of a sequence of eight digits and four letters. The first two digits describe the day, the following four digits the time in 24-hour format, followed by a letter indicating the time zone. After the time zone the month is indicated by a uniform abbreviation consisting of three letters and at the end optionally follows the indication of the year in the form of two digits. \par
+For example the moon landing on July 21th 1969 at 02:56 is represented in the date time group as
+\par\begin{center}
+\fcolorbox{denim}{denim!5!white}{21}
+\fcolorbox{sunset}{sunset!5!white}{02}
+\fcolorbox{sunset}{sunset!5!white}{56}
+\fcolorbox{grass}{grass!5!white}{Z}
+\fcolorbox{denim}{denim!5!white}{jul}
+\fcolorbox{denim}{denim!5!white}{69}
+\end{center}\par
+
+\fcolorbox{denim}{denim!5!white}{21}
+\fcolorbox{denim}{denim!5!white}{jul}
+\fcolorbox{denim}{denim!5!white}{69} indicates the date, July 21th 1969\par\medskip
+
+\fcolorbox{sunset}{sunset!5!white}{02}
+\fcolorbox{sunset}{sunset!5!white}{56} indicates the time 02:56 with \par\medskip
+\fcolorbox{grass}{grass!5!white}{Z} as the corresponding timezone Zulu\par\medskip
+
+The date alone
+
+\par\begin{center}
+\fcolorbox{denim}{denim!5!white}{21}
+\fcolorbox{denim}{denim!5!white}{jul}
+\fcolorbox{denim}{denim!5!white}{69}
+\end{center}\par
+
+respectively the time
+
+\par\begin{center}
+\fcolorbox{sunset}{sunset!5!white}{02}
+\fcolorbox{sunset}{sunset!5!white}{56}
+\fcolorbox{grass}{grass!5!white}{Z}
+\end{center}\par
+
+\section{Options}
+
+The \textbf{milDate} package can be customized by global options.
+
+\verb+\usepackage[lang=german,kern=0pt]{milDate}+
+
+\noindent\marginpar{lang} The \textbf{milDate} package identifies the language used and sets the month names accordingly. The behavior can be overridden by setting the \verb+lang+ option.
+Currently german and english are available.
+
+\noindent\marginpar{kern} The individual blocks of the date-time group are set with a small space between them. By default, the \textbf{milDate} package uses 1pt. This spacing can be changed with the \verb+kern+ option if needed. A \emph{kern} is a typographic term for a nonbreakable space between two elements.
+
+\section{Commands}
+
+\noindent\marginpar{milDate} The \textbf{milDate} command sets the date consisting of day, month, year. It can be specified in the format \emph{dd-mm-yyyy} or in the ISO format \emph{yyyy-mm-dd}. For clear distinction, years should be specified with four digits. All non-numeric characters can be used as delimiter.
+It is run through a simple validity check, where days range from 1 to 31 and months from 01 to 12.
+
+\par\medskip
+\begin{tabular}{ll}
+\verb+\milDate{08.12.1980}+ & \milDate{08.12.1980} \\
+\verb+\milDate{10/05/1994}+ & \milDate{10/05/1994} \\ 	% Nelson Mandela sworn in as first black president
+\verb+\milDate{4-7-97}+ 	& \milDate{4-7-97} \\		% Mars Pathfinder lands on Mars
+\verb+\milDate{2008.11.4}+ 	& \milDate{2008.11.4} \\	% Barack Obama elected
+\end{tabular}
+
+\medskip\noindent\marginpar{milTime} The \textbf{milTime} command sets the time in 24 hour format hhmm without delimiter.
+
+\par\medskip
+\begin{tabular}{ll}
+\verb+\milTime{12:30}[S]+ & \milTime{12:30}[S] \\	% JFK assassinated
+\end{tabular}
+
+\medskip\noindent\marginpar{timezone} Time zones are indicated with letters A to I and K to Z. To avoid confusion, J is skipped. Starting from the prime meridian at Greenwich (UTC-0, Greenwich Mean Time \emph{GMT}, Zulu time), counting is eastward from A to M and westward from N to Y.
+
+\medskip\begin{minipage}{0.4\textwidth}
+\begin{tabular}{rcl}
+\toprule
+UTC & & Example \\
+\midrule
+-12 & Y & Fiji \\
+-11 & X & Samoa \\
+-10 & W & Honolulu \\
+-9 & V & Juneau \\
+-8 & U & \emph{Los Angeles} \\
+-7 & T & \emph{Denver} \\
+-6 & S & \emph{Dallas} \\
+-5 & R & \emph{New York} \\
+-4 & Q & \emph{Halifax} \\
+-3 & P & \emph{Buenos Aires} \\
+-2 & O & Greenland \\
+-1 & N & Azores \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{tabular}{rcl}
+\toprule
+UTC & & Example \\
+\midrule
++1 & A & \emph{Vienna}, France \\
++2 & B & \emph{Athens}, Greece\\
++3 & C & Iraq, Kuwait, Qatar\\
++4 & D & \emph{Moscow}, Russia\\
++5 & E & Pakistan, Kazakhstan\\
++6 & F & Bangladesh \\
++7 & G & Thailand \\
++8 & H & \emph{Bejing}, China \\
++9 & I & \emph{Tokyo}, Japan \\
++10 & K & \emph{Brisbane}, Australia \\
++11 & L & \emph{Sydney}, Australia \\
++12 & M & \emph{Wellington}, New Zealand \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+
+\medskip\noindent\marginpar{milDatetime} The \textbf{milDatetime} command allows to set date together with time.
+
+\par\medskip
+\begin{tabular}{ll}
+\verb+\milDatetime{02.09.1966}{01:00}+		& \milDatetime{02.09.1966}{01:00} \\	% Great fire of London starts
+\verb+\milDatetime{26/4/1986}{01:24}+		& \milDatetime{26/4/1986}{01:24} \\ 	% Explosion at Chernobyl
+\verb+\milDatetime{1972-06-17}[R]{01:47}+	& \milDatetime{1972-06-17}[R]{01:47} \\	% Watergate burglars arrested
+\verb+\milDatetime{1963/8/8}{03:15}+		& \milDatetime{1963/8/8}{03:15} \\		% Great Train Robbery
+
+\end{tabular}
+\end{document}
