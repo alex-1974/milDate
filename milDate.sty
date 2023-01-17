@@ -7,6 +7,9 @@
 	lang		.tl_set:N = \l__mildate_lang_tl,
 	lang		.initial:n = { german },
 	lang		.value_required:n = true,
+	kern		.dim_set:N = \l__mildate_kern_dim,
+	kern		.initial:n = { 1pt },
+	kern		.value_required:n = true,
 }
 
 \ProcessKeysOptions { mildate }
@@ -130,9 +133,9 @@
 	\regex_replace_all:nnN { [^\d] } { - } \l_tmpa_tl
 	\__mildate_date_parse:e { \l_tmpa_tl }
 	%% day
-	\__mildate_padinteger:n { \__mildate_date_day_int } \kern1pt
+	\__mildate_padinteger:n { \__mildate_date_day_int } \kern\l__mildate_kern_dim
 	%% month
-  	\use:c { __mildate_monthname_\l_mildate_lang_tl :n } { \__mildate_date_month_int }\kern1pt
+  	\use:c { __mildate_monthname_\l__mildate_lang_tl :n } { \__mildate_date_month_int }\kern\l__mildate_kern_dim
   	%% year
   	\__mildate_splityear:n { \__mildate_date_year_int }
   	\group_end:
@@ -148,11 +151,11 @@
 	\regex_replace_all:nnN { [^\d] } { - } \l_tmpa_tl
 	\__mildate_date_parse:e { \l_tmpa_tl }
 	%% day
-	\__mildate_padinteger:n { \__mildate_date_day_int } \kern1pt
+	\__mildate_padinteger:n { \__mildate_date_day_int } \kern\l__mildate_kern_dim
 	% insert time
-	\milTime{#3}[#2] \kern1pt
+	\milTime{#3}[#2] \kern\l__mildate_kern_dim
 	%% month
-  	\__mildate_monthname_german:n { \__mildate_date_month_int } \kern1pt
+  	\__mildate_monthname_german:n { \__mildate_date_month_int } \kern\l__mildate_kern_dim
   	%% year
   	\__mildate_splityear:n { \__mildate_date_year_int }
   	\group_end:
