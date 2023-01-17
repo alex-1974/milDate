@@ -121,7 +121,7 @@
 	%% minute
 	\__mildate_padinteger:n { \__mildate_time_minute_int }
 	%% timezone
-	#2
+	\regex_match:nnTF { [a-ik-zA-IK-Z] } { #2 }{#2}{?}
 	\group_end:
 }
 
