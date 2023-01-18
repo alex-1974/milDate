@@ -10,6 +10,9 @@
 	kern		.dim_set:N = \l__mildate_kern_dim,
 	kern		.initial:n = { 1pt },
 	kern		.value_required:n = true,
+	timezone	.tl_set:N = \l__mildate_default_timezone_tl,
+	timezone	.initial:n = { Z },
+	timezone	.value_required:n = true,
 }
 
 \ProcessKeysOptions { mildate }
@@ -21,6 +24,7 @@
 \int_new:N \__mildate_time_minute_int
 \tl_set:Nn \l__mildate_lang_tl \languagename
 
+% Clean delimiters and make simple Validation
 \cs_new_protected:Npn \__mildate_date_parse:n #1 {
 	\regex_match:nnTF { \A \d{4}-\d{1,2}-\d{1,2} \Z } { #1 } { 
 		\__mildate_date_iso_parse:www  #1 \q_stop 
@@ -32,8 +36,23 @@
 	}
 }
 
+% Clean delimiters and make simple Validation
 \cs_new_protected:Npn \__mildate_time_parse:n #1 {
-	\__mildate_time_parse:ww #1 \q_stop
+	% hhmm without delimiter
+	\regex_match:nnTF { \A \d{4} \Z } { #1 } 
+		{	\seq_set_split:Nnn \l_tmpa_seq { } { #1 }
+			\seq_put_right:Nx \l_tmpb_seq { \seq_item:Nn \l_tmpa_seq { 1 }  }
+			\seq_put_right:Nx \l_tmpb_seq { \seq_item:Nn \l_tmpa_seq { 2 }  }
+			\seq_put_right:Nn \l_tmpb_seq { - }
+			\seq_put_right:Nx \l_tmpb_seq { \seq_item:Nn \l_tmpa_seq { 3 }  }
+			\seq_put_right:Nx \l_tmpb_seq { \seq_item:Nn \l_tmpa_seq { 4 }  }
+			\__mildate_time_parse:e { \seq_use:Nn \l_tmpb_seq {} }
+		}
+		% hh-mm with delimiter
+		{ \regex_match:nnTF { \A \d{2}-\d{2} \Z } { #1 } 
+			{ \__mildate_time_parse:ww #1 \q_stop }
+			{ \__mildate_time_parse:ww  00-00 \q_stop }
+		}
 }
 \cs_generate_variant:Nn \__mildate_date_parse:n { e }
 \cs_generate_variant:Nn \__mildate_time_parse:n { e }
@@ -50,6 +69,7 @@
 	\int_set:Nn \__mildate_date_month_int {#2}
 	\int_set:Nn \__mildate_date_day_int   {#3}
 }
+% Sets the time variables (assumes hh-mm)
 \cs_new_protected:Npn \__mildate_time_parse:ww #1-#2 \q_stop {
   \int_set:Nn \__mildate_time_hour_int   {#1}
   \int_set:Nn \__mildate_time_minute_int {#2}
@@ -91,6 +111,7 @@
       } { ??? }
 }
 
+% Fill up integers to two digits 
 \tl_new:N \pad_output_tl
 \cs_new_protected:Npn \__mildate_padinteger:n #1 {
 	%\group_begin:
@@ -101,6 +122,7 @@
 	%\group_end:
 }
 
+% If the year has more than 2 digits just take the last two
 \tl_new:N \split_output_tl
 \cs_new_protected:Npn \__mildate_splityear:n #1 {	
 	\tl_set:NV \split_output_tl { #1 }
@@ -110,7 +132,7 @@
 }
 
 % Set time in military format
-\NewDocumentCommand\milTime{mO{}} {
+\NewDocumentCommand\milTime{mo} {
 	\group_begin:
 	% split time
 	\tl_set:Nn \l_tmpa_tl { #1 }
@@ -118,18 +140,26 @@
 	\__mildate_time_parse:e { \l_tmpa_tl }
 	%% hour
 	\__mildate_padinteger:n { \__mildate_time_hour_int }
-	%% minute
+	%% minutedefault
 	\__mildate_padinteger:n { \__mildate_time_minute_int }
 	%% timezone
-	#2
+	\IfValueT {#2}{\regex_match:nnTF { [a-i|k-z|A-I|K-Z] } { #2 } {#2} {?} }
 	\group_end:
+}
+
+\NewDocumentCommand\milToday {} {
+	\tl_set:Nn \l_tmpa_tl { \the\year-\the\month-\the\day }
+	\exp_args:Ne \milDate { \l_tmpa_tl }
 }
 
 % Set date in military format
 \NewDocumentCommand\milDate { m } {
 	\group_begin:
 	% split date
-	\tl_set:Nn \l_tmpa_tl { #1 }
+	\str_if_eq:nnTF { \today } { #1 }
+		{ \exp_args:Nne \tl_set:Nn \l_tmpa_tl { \the\year-\the\month-\the\day } }
+		{ \tl_set:Nn \l_tmpa_tl { #1 } }
+	%\tl_set:Nn \l_tmpa_tl { #1 }
 	\regex_replace_all:nnN { [^\d] } { - } \l_tmpa_tl
 	\__mildate_date_parse:e { \l_tmpa_tl }
 	%% day
@@ -144,16 +174,21 @@
 % Set datetime in military format
 % ISO yyyy-mm-dd
 % dd-mm-yyyy (or yy)
-\NewDocumentCommand\milDatetime{mO{Z}m}{
+\NewDocumentCommand\milDatetime{mom}{
 	\group_begin:
 	% split date
-	\tl_set:Nn \l_tmpa_tl { #1 }
+	\str_if_eq:nnTF { \today } { #1 }
+		{ \exp_args:Nne \tl_set:Nn \l_tmpa_tl { \the\year-\the\month-\the\day } }
+		{ \tl_set:Nn \l_tmpa_tl { #1 } }
 	\regex_replace_all:nnN { [^\d] } { - } \l_tmpa_tl
 	\__mildate_date_parse:e { \l_tmpa_tl }
 	%% day
 	\__mildate_padinteger:n { \__mildate_date_day_int } \kern\l__mildate_kern_dim
 	% insert time
-	\milTime{#3}[#2] \kern\l__mildate_kern_dim
+	\IfNoValueTF {#2} 
+		{ \milTime{#3}{ \l__mildate_default_timezone_tl} }
+		{\milTime{#3}[#2] }
+	\kern\l__mildate_kern_dim
 	%% month
   	\__mildate_monthname_german:n { \__mildate_date_month_int } \kern\l__mildate_kern_dim
   	%% year
