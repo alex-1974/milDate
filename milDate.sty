@@ -147,11 +147,19 @@
 	\group_end:
 }
 
+\NewDocumentCommand\milToday {} {
+	\tl_set:Nn \l_tmpa_tl { \the\year-\the\month-\the\day }
+	\exp_args:Ne \milDate { \l_tmpa_tl }
+}
+
 % Set date in military format
 \NewDocumentCommand\milDate { m } {
 	\group_begin:
 	% split date
-	\tl_set:Nn \l_tmpa_tl { #1 }
+	\str_if_eq:nnTF { \today } { #1 }
+		{ \exp_args:Nne \tl_set:Nn \l_tmpa_tl { \the\year-\the\month-\the\day } }
+		{ \tl_set:Nn \l_tmpa_tl { #1 } }
+	%\tl_set:Nn \l_tmpa_tl { #1 }
 	\regex_replace_all:nnN { [^\d] } { - } \l_tmpa_tl
 	\__mildate_date_parse:e { \l_tmpa_tl }
 	%% day
@@ -169,7 +177,9 @@
 \NewDocumentCommand\milDatetime{mom}{
 	\group_begin:
 	% split date
-	\tl_set:Nn \l_tmpa_tl { #1 }
+	\str_if_eq:nnTF { \today } { #1 }
+		{ \exp_args:Nne \tl_set:Nn \l_tmpa_tl { \the\year-\the\month-\the\day } }
+		{ \tl_set:Nn \l_tmpa_tl { #1 } }
 	\regex_replace_all:nnN { [^\d] } { - } \l_tmpa_tl
 	\__mildate_date_parse:e { \l_tmpa_tl }
 	%% day
