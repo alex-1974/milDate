@@ -1,12 +1,13 @@
 \documentclass[a4paper,10pt]{scrarticle}
 \usepackage{fontspec}
-\usepackage[lang=english]{milDate}
-\usepackage{xcolor}
-\usepackage{booktabs}
 
 \usepackage{polyglossia}
 \setmainlanguage[variant=british]{english}
 \setotherlanguage[babelshorthands=true]{german}
+
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{milDate}
 
 \defaultfontfeatures{Scale=MatchLowercase}
 \setmainfont[Ligatures=TeX]{Linux Libertine O}
@@ -74,36 +75,28 @@ respectively the time
 
 The \textbf{milDate} package can be customized by global options.
 
-\verb+\usepackage[lang=german,kern=0pt]{milDate}+
+\verb+\usepackage[lang=english,timezone=Z,kern=1pt]{milDate}+
 
-\noindent\marginpar{lang} The \textbf{milDate} package identifies the language used and sets the month names accordingly. The behavior can be overridden by setting the \verb+lang+ option.
+\noindent\marginpar{lang} The \textbf{milDate} package identifies the language used in the document and sets the month names accordingly. The behavior can be overridden by setting the \verb+lang+ option.
 Currently german and english are available.
+
+\noindent\marginpar{timezone} The \verb+timezone+ option sets the default time zone that will be used globally if no time zone is specified in the date time information. For the possible time zones, see the timezone table. Zulu time is used by default.
 
 \noindent\marginpar{kern} The individual blocks of the date-time group are set with a small space between them. By default, the \textbf{milDate} package uses 1pt. This spacing can be changed with the \verb+kern+ option if needed. A \emph{kern} is a typographic term for a nonbreakable space between two elements.
 
 \section{Commands}
 
-\noindent\marginpar{milDate} The \textbf{milDate} command sets the date consisting of day, month, year. It can be specified in the format \emph{dd-mm-yyyy} or in the ISO format \emph{yyyy-mm-dd}. For clear distinction, years should be specified with four digits. All non-numeric characters can be used as delimiter.
-It is run through a simple validity check, where days range from 1 to 31 and months from 01 to 12.
-
-\par\medskip
-\begin{tabular}{ll}
-\verb+\milDate{08.12.1980}+ & \milDate{08.12.1980} \\
-\verb+\milDate{10/05/1994}+ & \milDate{10/05/1994} \\ 	% Nelson Mandela sworn in as first black president
-\verb+\milDate{4-7-97}+ 	& \milDate{4-7-97} \\		% Mars Pathfinder lands on Mars
-\verb+\milDate{2008.11.4}+ 	& \milDate{2008.11.4} \\	% Barack Obama elected
-\end{tabular}
-
-\medskip\noindent\marginpar{milTime} The \textbf{milTime} command sets the time in 24 hour format hhmm without delimiter.
+\noindent\marginpar{milTime} The \textbf{milTime} command sets the time in 24 hour format hhmm without delimiter.
 
 \par\medskip
 \begin{tabular}{ll}
 \verb+\milTime{12:30}[S]+ & \milTime{12:30}[S] \\	% JFK assassinated
+\verb+\milTime{0238}+	  & \milTime{0238} \\		% Titanic hits iceberg
 \end{tabular}
 
 \medskip\noindent\marginpar{timezone} Time zones are indicated with letters A to I and K to Z. To avoid confusion, J is skipped. Starting from the prime meridian at Greenwich (UTC-0, Greenwich Mean Time \emph{GMT}, Zulu time), counting is eastward from A to M and westward from N to Y.
 
-\medskip\begin{minipage}{0.4\textwidth}
+\bigskip\begin{minipage}{0.4\textwidth}\label{tab:timezones}
 \begin{tabular}{rcl}
 \toprule
 UTC & & Example \\
@@ -144,7 +137,22 @@ UTC & & Example \\
 \end{tabular}
 \end{minipage}
 
-\medskip\noindent\marginpar{milDatetime} The \textbf{milDatetime} command allows to set date together with time.
+\bigskip\noindent\marginpar{milToday} The \textbf{milToday} command sets the current date in NATO format
+
+\noindent\marginpar{milDate} The \textbf{milDate} command sets the date consisting of day, month, year. It can be specified in the format \emph{dd-mm-yyyy} or in the ISO format \emph{yyyy-mm-dd}. For clear distinction, years should be specified with four digits. All non-numeric characters can be used as delimiter. For the current day the macro \verb+\today+ can be used
+The date is run through a simple validity check, where days range from 1 to 31 and months from 01 to 12.
+
+\par\medskip
+\begin{tabular}{ll}
+\verb+\milDate{08.12.1980}+ & \milDate{08.12.1980} \\
+\verb+\milDate{10/05/1994}+ & \milDate{10/05/1994} \\ 	% Nelson Mandela sworn in as first black president
+\verb+\milDate{4-7-97}+ 	& \milDate{4-7-97} \\		% Mars Pathfinder lands on Mars
+\verb+\milDate{2008.11.4}+ 	& \milDate{2008.11.4} \\	% Barack Obama elected
+\verb+\milDate{\today}+	  & \milDate{\today} \\		% this day
+\end{tabular}
+
+\medskip\noindent\marginpar{milDatetime} The \textbf{milDatetime} command allows to set date together with time. For the current day the macro \verb+\today+ can be used.
+The date and time are run through simple validity checks, where days range from 1 to 31,months from 1 to 12, hours from 0 to 23 and minutes from 0 to 59.
 
 \par\medskip
 \begin{tabular}{ll}
@@ -152,6 +160,7 @@ UTC & & Example \\
 \verb+\milDatetime{26/4/1986}{01:24}+		& \milDatetime{26/4/1986}{01:24} \\ 	% Explosion at Chernobyl
 \verb+\milDatetime{1972-06-17}[R]{01:47}+	& \milDatetime{1972-06-17}[R]{01:47} \\	% Watergate burglars arrested
 \verb+\milDatetime{1963/8/8}{03:15}+		& \milDatetime{1963/8/8}{03:15} \\		% Great Train Robbery
+\verb+\milDatetime{\today}{05:00}+			& \milDatetime{\today}{05:00} \\	
 
 \end{tabular}
 \end{document}
