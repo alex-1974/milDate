@@ -5,7 +5,6 @@
 
 \keys_define:nn { mildate } {
 	lang		.tl_set:N = \l__mildate_lang_tl,
-	%lang		.initial:n = { \languagename },
 	lang		.value_required:n = true,
 	kern		.dim_set:N = \l__mildate_kern_dim,
 	kern		.initial:n = { 1pt },
@@ -28,7 +27,6 @@
 \int_new:N \__mildate_date_year_int
 \int_new:N \__mildate_time_hour_int
 \int_new:N \__mildate_time_minute_int
-%\tl_set:Nn \l__mildate_lang_tl \languagename
 
 % Clean delimiters and make simple Validation
 \cs_new_protected:Npn \__mildate_date_parse:n #1 {
@@ -65,20 +63,29 @@
 
 % Sets the date variables (assumes DIN 5008 dd-mm-yyyy)
 \cs_new_protected:Npn \__mildate_date_parse:www #1-#2-#3 \q_stop {
-	\int_set:Nn \__mildate_date_year_int  {#3}
-	\int_set:Nn \__mildate_date_month_int {#2}
-	\int_set:Nn \__mildate_date_day_int   {#1}
+	%\int_set:Nn \__mildate_date_year_int  {#3}
+	%\int_set:Nn \__mildate_date_month_int {#2}
+	%\int_set:Nn \__mildate_date_day_int   {#1}
+	\__mildate_date_iso_parse:www #3-#2-#1 \q_stop
 }
 % Sets the date variables (assumes ISO Date yyyy-mm-dd)
 \cs_new_protected:Npn \__mildate_date_iso_parse:www #1-#2-#3 \q_stop {
 	\int_set:Nn \__mildate_date_year_int  {#1}
-	\int_set:Nn \__mildate_date_month_int {#2}
-	\int_set:Nn \__mildate_date_day_int   {#3}
+	\int_compare:nNnTF { #2 } > { 12 } 
+		{ \int_set:Nn \__mildate_date_month_int { 00 } }
+		{ \int_set:Nn \__mildate_date_month_int { #2 } }
+	\int_compare:nNnTF { #3 } > { 31 } 	
+		{ \int_set:Nn \__mildate_date_day_int   { 00 } }
+		{ \int_set:Nn \__mildate_date_day_int   { #3 } }
 }
 % Sets the time variables (assumes hh-mm)
 \cs_new_protected:Npn \__mildate_time_parse:ww #1-#2 \q_stop {
-  \int_set:Nn \__mildate_time_hour_int   {#1}
-  \int_set:Nn \__mildate_time_minute_int {#2}
+	\int_compare:nNnTF { #1 } > { 24 } 
+  		{ \int_set:Nn \__mildate_time_hour_int   { 00 } }
+  		{ \int_set:Nn \__mildate_time_hour_int   { #1 } }
+  	\int_compare:nNnTF { #2 } > { 60 } 
+  		{ \int_set:Nn \__mildate_time_minute_int { 00 } }
+  		{ \int_set:Nn \__mildate_time_minute_int { #2 } }
 }
 
 \cs_new_protected:Npn \__mildate_monthname_german:n #1 {
