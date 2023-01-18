@@ -1,24 +1,35 @@
 \RequirePackage{l3keys2e,xparse}
-\ProvidesExplPackage{milDate} {2023/01/16}{1.0} {Set date in military style}
+\ProvidesExplPackage{milDate} {2023/01/16}{1.0} {Set date in NATO style}
 
 %\ExplSyntaxOn
 
 \keys_define:nn { mildate } {
-	lang		.tl_set:N = \l_mildate_lang_tl,
-	lang		.initial:n = { german },
+	lang		.tl_set:N = \l__mildate_lang_tl,
 	lang		.value_required:n = true,
+	kern		.dim_set:N = \l__mildate_kern_dim,
+	kern		.initial:n = { 1pt },
+	kern		.value_required:n = true,
+	timezone	.tl_set:N = \l__mildate_default_timezone_tl,
+	timezone	.initial:n = { Z },
+	timezone	.value_required:n = true,
 }
 
 \ProcessKeysOptions { mildate }
 
-\int_new:N \mildate_date_day_int
-\int_new:N \mildate_date_month_int
-\int_new:N \mildate_date_year_int
-\int_new:N \mildate_time_hour_int
-\int_new:N \mildate_time_minute_int
-\tl_set:Nn \mildate_lang_tl \languagename
+% If lang is not set take the global language
+\tl_if_empty:NT \l__mildate_lang_tl 
+	{ \tl_if_empty:cTF \languagename }
+		{ \tl_set:Nn \l__mildate_lang_tl { english } }
+		{ \tl_set:Nn \l__mildate_lang_tl { \languagename } } 
 
-\cs_new_protected:Npn \mildate_date_parse:n #1 {
+\int_new:N \__mildate_date_day_int
+\int_new:N \__mildate_date_month_int
+\int_new:N \__mildate_date_year_int
+\int_new:N \__mildate_time_hour_int
+\int_new:N \__mildate_time_minute_int
+
+% Clean delimiters and make simple Validation
+\cs_new_protected:Npn \__mildate_date_parse:n #1 {
 	\regex_match:nnTF { \A \d{4}-\d{1,2}-\d{1,2} \Z } { #1 } { 
 		\__mildate_date_iso_parse:www  #1 \q_stop 
 	}{ \regex_match:nnTF { \A \d{1,2}-\d{1,2}-\d{2,4} \Z } { #1 } { 
@@ -29,27 +40,52 @@
 	}
 }
 
-\cs_new_protected:Npn \mildate_time_parse:n #1 {
-	\__mildate_time_parse:ww #1 \q_stop
+% Clean delimiters and make simple Validation
+\cs_new_protected:Npn \__mildate_time_parse:n #1 {
+	% hhmm without delimiter
+	\regex_match:nnTF { \A \d{4} \Z } { #1 } 
+		{	\seq_set_split:Nnn \l_tmpa_seq { } { #1 }
+			\seq_put_right:Nx \l_tmpb_seq { \seq_item:Nn \l_tmpa_seq { 1 }  }
+			\seq_put_right:Nx \l_tmpb_seq { \seq_item:Nn \l_tmpa_seq { 2 }  }
+			\seq_put_right:Nn \l_tmpb_seq { - }
+			\seq_put_right:Nx \l_tmpb_seq { \seq_item:Nn \l_tmpa_seq { 3 }  }
+			\seq_put_right:Nx \l_tmpb_seq { \seq_item:Nn \l_tmpa_seq { 4 }  }
+			\__mildate_time_parse:e { \seq_use:Nn \l_tmpb_seq {} }
+		}
+		% hh-mm with delimiter
+		{ \regex_match:nnTF { \A \d{2}-\d{2} \Z } { #1 } 
+			{ \__mildate_time_parse:ww #1 \q_stop }
+			{ \__mildate_time_parse:ww  00-00 \q_stop }
+		}
 }
-\cs_generate_variant:Nn \mildate_date_parse:n { e }
-\cs_generate_variant:Nn \mildate_time_parse:n { e }
+\cs_generate_variant:Nn \__mildate_date_parse:n { e }
+\cs_generate_variant:Nn \__mildate_time_parse:n { e }
 
 % Sets the date variables (assumes DIN 5008 dd-mm-yyyy)
 \cs_new_protected:Npn \__mildate_date_parse:www #1-#2-#3 \q_stop {
-	\int_set:Nn \mildate_date_year_int  {#3}
-	\int_set:Nn \mildate_date_month_int {#2}
-	\int_set:Nn \mildate_date_day_int   {#1}
+	%\int_set:Nn \__mildate_date_year_int  {#3}
+	%\int_set:Nn \__mildate_date_month_int {#2}
+	%\int_set:Nn \__mildate_date_day_int   {#1}
+	\__mildate_date_iso_parse:www #3-#2-#1 \q_stop
 }
 % Sets the date variables (assumes ISO Date yyyy-mm-dd)
 \cs_new_protected:Npn \__mildate_date_iso_parse:www #1-#2-#3 \q_stop {
-	\int_set:Nn \mildate_date_year_int  {#1}
-	\int_set:Nn \mildate_date_month_int {#2}
-	\int_set:Nn \mildate_date_day_int   {#3}
+	\int_set:Nn \__mildate_date_year_int  {#1}
+	\int_compare:nNnTF { #2 } > { 12 } 
+		{ \int_set:Nn \__mildate_date_month_int { 00 } }
+		{ \int_set:Nn \__mildate_date_month_int { #2 } }
+	\int_compare:nNnTF { #3 } > { 31 } 	
+		{ \int_set:Nn \__mildate_date_day_int   { 00 } }
+		{ \int_set:Nn \__mildate_date_day_int   { #3 } }
 }
+% Sets the time variables (assumes hh-mm)
 \cs_new_protected:Npn \__mildate_time_parse:ww #1-#2 \q_stop {
-  \int_set:Nn \mildate_time_hour_int   {#1}
-  \int_set:Nn \mildate_time_minute_int {#2}
+	\int_compare:nNnTF { #1 } > { 24 } 
+  		{ \int_set:Nn \__mildate_time_hour_int   { 00 } }
+  		{ \int_set:Nn \__mildate_time_hour_int   { #1 } }
+  	\int_compare:nNnTF { #2 } > { 60 } 
+  		{ \int_set:Nn \__mildate_time_minute_int { 00 } }
+  		{ \int_set:Nn \__mildate_time_minute_int { #2 } }
 }
 
 \cs_new_protected:Npn \__mildate_monthname_german:n #1 {
@@ -88,17 +124,20 @@
       } { ??? }
 }
 
+% Fill up integers to two digits 
+\tl_new:N \pad_output_tl
 \cs_new_protected:Npn \__mildate_padinteger:n #1 {
-	\group_begin:
-	\tl_tero_new:N \pad_output_tl
+	%\group_begin:
+	\tl_clear:N \pad_output_tl
 	\int_compare:nNnT { #1 } < { 10 } { \tl_put_right:Nn \pad_output_tl { 0 } } 
 	\tl_put_right:NV \pad_output_tl { #1 }
 	\tl_use:N \pad_output_tl
-	\group_end:
+	%\group_end:
 }
 
-\cs_new_protected:Npn \__mildate_splityear:n #1 {
-	\tl_zero_new:N \split_output_tl
+% If the year has more than 2 digits just take the last two
+\tl_new:N \split_output_tl
+\cs_new_protected:Npn \__mildate_splityear:n #1 {	
 	\tl_set:NV \split_output_tl { #1 }
 	\int_compare:nNnTF { #1 } > { 99 } 
 	{ \tl_range:Nnn \split_output_tl { 3 }{ -1 } }
@@ -106,53 +145,67 @@
 }
 
 % Set time in military format
-\NewDocumentCommand\milTime{mO{}} {
+\NewDocumentCommand\milTime{mo} {
 	\group_begin:
 	% split time
 	\tl_set:Nn \l_tmpa_tl { #1 }
 	\regex_replace_all:nnN { [^\d] } { - } \l_tmpa_tl
-	\mildate_time_parse:e { \l_tmpa_tl }
+	\__mildate_time_parse:e { \l_tmpa_tl }
 	%% hour
-	\tl_use:Nn \__mildate_padinteger:n { \mildate_time_hour_int }
-	%% minute
-	\tl_use:Nn \__mildate_padinteger:n { \mildate_time_minute_int }
+	\__mildate_padinteger:n { \__mildate_time_hour_int }
+	%% minutedefault
+	\__mildate_padinteger:n { \__mildate_time_minute_int }
 	%% timezone
-	#2
+	\IfValueT {#2}{\regex_match:nnTF { [a-i|k-z|A-I|K-Z] } { #2 } {#2} {?} }
 	\group_end:
 }
 
+\NewDocumentCommand\milToday {} {
+	\tl_set:Nn \l_tmpa_tl { \the\year-\the\month-\the\day }
+	\exp_args:Ne \milDate { \l_tmpa_tl }
+}
+
 % Set date in military format
-\NewDocumentCommand\milDate{m} {
+\NewDocumentCommand\milDate { m } {
 	\group_begin:
 	% split date
-	\tl_set:Nn \l_tmpa_tl { #1 }
+	\str_if_eq:nnTF { \today } { #1 }
+		{ \exp_args:Nne \tl_set:Nn \l_tmpa_tl { \the\year-\the\month-\the\day } }
+		{ \tl_set:Nn \l_tmpa_tl { #1 } }
+	%\tl_set:Nn \l_tmpa_tl { #1 }
 	\regex_replace_all:nnN { [^\d] } { - } \l_tmpa_tl
-	\mildate_date_parse:e { \l_tmpa_tl }
+	\__mildate_date_parse:e { \l_tmpa_tl }
 	%% day
-	\tl_use:Nn \__mildate_padinteger:n { \mildate_date_day_int }\kern1pt
+	\__mildate_padinteger:n { \__mildate_date_day_int } \kern\l__mildate_kern_dim
 	%% month
-  	\tl_use:Nn \use:c { __mildate_monthname_\l_mildate_lang_tl :n } { \mildate_date_month_int }\kern1pt
+  	\use:c { __mildate_monthname_\l__mildate_lang_tl :n } { \__mildate_date_month_int }\kern\l__mildate_kern_dim
   	%% year
-  	\tl_use:Nn \__mildate_splityear:n { \mildate_date_year_int }
+  	\__mildate_splityear:n { \__mildate_date_year_int }
   	\group_end:
 }
 
 % Set datetime in military format
 % ISO yyyy-mm-dd
 % dd-mm-yyyy (or yy)
-\NewDocumentCommand\milDatetime{mO{Z}m}{
+\NewDocumentCommand\milDatetime{mom}{
 	\group_begin:
 	% split date
-	\tl_set:Nn \l_tmpa_tl { #1 }
+	\str_if_eq:nnTF { \today } { #1 }
+		{ \exp_args:Nne \tl_set:Nn \l_tmpa_tl { \the\year-\the\month-\the\day } }
+		{ \tl_set:Nn \l_tmpa_tl { #1 } }
 	\regex_replace_all:nnN { [^\d] } { - } \l_tmpa_tl
-	\mildate_date_parse:e { \l_tmpa_tl }
+	\__mildate_date_parse:e { \l_tmpa_tl }
 	%% day
-	\tl_use:Nn \__mildate_padinteger:n { \mildate_date_day_int }\kern1pt
+	\__mildate_padinteger:n { \__mildate_date_day_int } \kern\l__mildate_kern_dim
 	% insert time
-	\milTime{#3}[#2]\kern1pt
+	\IfNoValueTF {#2} 
+		{ \milTime{#3}{ \l__mildate_default_timezone_tl} }
+		{\milTime{#3}[#2] }
+	\kern\l__mildate_kern_dim
 	%% month
-  	\tl_use:Nn \__mildate_monthname_german:n { \mildate_date_month_int }\kern1pt
+  	\__mildate_monthname_german:n { \__mildate_date_month_int } \kern\l__mildate_kern_dim
   	%% year
-  	\tl_use:Nn \__mildate_splityear:n { \mildate_date_year_int }
+  	\__mildate_splityear:n { \__mildate_date_year_int }
   	\group_end:
 }
+
