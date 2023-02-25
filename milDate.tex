@@ -75,10 +75,12 @@ respectively the time
 
 The \textbf{milDate} package can be customized by global options.
 
-\verb+\usepackage[lang=english,timezone=Z,kern=1pt]{milDate}+
+\verb+\usepackage[lang=english,timezone=Z,kern=1pt,lowercase]{milDate}+
 
 \noindent\marginpar{lang} The \textbf{milDate} package identifies the language used in the document and sets the month names accordingly. The behavior can be overridden by setting the \verb+lang+ option.
 Currently german and english are available.
+
+\noindent\marginpar{uppercase} The NATO standard specifies that the names of the months should be written in lower case. This can be changed by using the boolean \verb+uppercase+ and \verb+lowercase+ options.
 
 \noindent\marginpar{timezone} The \verb+timezone+ option sets the default time zone that will be used globally if no time zone is specified in the date time information. For the possible time zones, see the timezone table. Zulu time is used by default.
 
