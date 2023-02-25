@@ -12,6 +12,10 @@
 	timezone	.tl_set:N = \l__mildate_default_timezone_tl,
 	timezone	.initial:n = { Z },
 	timezone	.value_required:n = true,
+	lowercase	.bool_set:N = \l__mildate_lowercase_bool,
+	lowercase	.initial:n = true,
+	uppercase	.bool_set:N = \l__mildate_uppercase_bool,
+	uppercase	.initial:n = false,
 }
 
 \ProcessKeysOptions { mildate }
@@ -21,14 +25,18 @@
 	{ \tl_if_empty:cTF \languagename }
 		{ \tl_set:Nn \l__mildate_lang_tl { english } }
 		{ \tl_set:Nn \l__mildate_lang_tl { \languagename } } 
+		
+\bool_if:NT \l__mildate_uppercase_bool { \bool_set_false:N \l__mildate_lowercase_bool }
 
+% Initialize variables
 \int_new:N \__mildate_date_day_int
 \int_new:N \__mildate_date_month_int
 \int_new:N \__mildate_date_year_int
 \int_new:N \__mildate_time_hour_int
 \int_new:N \__mildate_time_minute_int
+\tl_new:N  \__mildate_date_month_tl
 
-% Clean delimiters and make simple Validation
+% Date: Clean delimiters and make simple Validation
 \cs_new_protected:Npn \__mildate_date_parse:n #1 {
 	\regex_match:nnTF { \A \d{4}-\d{1,2}-\d{1,2} \Z } { #1 } { 
 		\__mildate_date_iso_parse:www  #1 \q_stop 
@@ -40,7 +48,7 @@
 	}
 }
 
-% Clean delimiters and make simple Validation
+% Time: Clean delimiters and make simple Validation
 \cs_new_protected:Npn \__mildate_time_parse:n #1 {
 	% hhmm without delimiter
 	\regex_match:nnTF { \A \d{4} \Z } { #1 } 
@@ -63,9 +71,6 @@
 
 % Sets the date variables (assumes DIN 5008 dd-mm-yyyy)
 \cs_new_protected:Npn \__mildate_date_parse:www #1-#2-#3 \q_stop {
-	%\int_set:Nn \__mildate_date_year_int  {#3}
-	%\int_set:Nn \__mildate_date_month_int {#2}
-	%\int_set:Nn \__mildate_date_day_int   {#1}
 	\__mildate_date_iso_parse:www #3-#2-#1 \q_stop
 }
 % Sets the date variables (assumes ISO Date yyyy-mm-dd)
@@ -89,6 +94,7 @@
 }
 
 \cs_new_protected:Npn \__mildate_monthname_german:n #1 {
+	\tl_set:Nn \__mildate_date_month_tl {
 	\int_case:nnF { #1 }
       {
         { 1 }  { JAN }
@@ -104,9 +110,11 @@
         { 11 }  { NOV }
         { 12 }  { DEZ }
       } { ??? }
+   }
 }
 
 \cs_new_protected:Npn \__mildate_monthname_english:n #1 {
+	\tl_set:Nn \__mildate_date_month_tl {
 	\int_case:nnF { #1 }
       {
         { 1 }  { JAN }
@@ -122,6 +130,7 @@
         { 11 }  { NOV }
         { 12 }  { DEC }
       } { ??? }
+    }
 }
 
 % Fill up integers to two digits 
@@ -142,6 +151,13 @@
 	\int_compare:nNnTF { #1 } > { 99 } 
 	{ \tl_range:Nnn \split_output_tl { 3 }{ -1 } }
 	{ \tl_use:N \split_output_tl }
+}
+
+\cs_new_protected:Npn \__mildate_month_string:n #1 {
+	\use:c { __mildate_monthname_\l__mildate_lang_tl :n } { #1 }
+	\bool_if:nTF { \l__mildate_lowercase_bool }
+		{ \text_lowercase:n { \__mildate_date_month_tl } }
+		{ \text_uppercase:n { \__mildate_date_month_tl } }
 }
 
 % Set time in military format
@@ -178,7 +194,10 @@
 	%% day
 	\__mildate_padinteger:n { \__mildate_date_day_int } \kern\l__mildate_kern_dim
 	%% month
-  	\use:c { __mildate_monthname_\l__mildate_lang_tl :n } { \__mildate_date_month_int }\kern\l__mildate_kern_dim
+  	%\tl_set:Nn \__mildate_date_month_tl { \use:c { __mildate_monthname_\l__mildate_lang_tl :n } { \__mildate_date_month_int } }
+  	\__mildate_month_string:n { \__mildate_date_month_int } 
+  	\kern\l__mildate_kern_dim
+  	
   	%% year
   	\__mildate_splityear:n { \__mildate_date_year_int }
   	\group_end:
@@ -203,7 +222,8 @@
 		{\milTime{#3}[#2] }
 	\kern\l__mildate_kern_dim
 	%% month
-  	\__mildate_monthname_german:n { \__mildate_date_month_int } \kern\l__mildate_kern_dim
+  	\__mildate_month_string:n { \__mildate_date_month_int } 
+  	\kern\l__mildate_kern_dim
   	%% year
   	\__mildate_splityear:n { \__mildate_date_year_int }
   	\group_end:
