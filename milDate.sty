@@ -35,6 +35,8 @@
 \int_new:N \__mildate_time_hour_int
 \int_new:N \__mildate_time_minute_int
 \tl_new:N  \__mildate_date_month_tl
+\int_new:N \__mildate_timezone_int
+\tl_new:N  \__mildate_timezone_tl
 
 % Date: Clean delimiters and make simple Validation
 \cs_new_protected:Npn \__mildate_date_parse:n #1 {
@@ -133,6 +135,68 @@
     }
 }
 
+%-----------------------------------------------------------------
+% Time zone NATO code according to UTC
+\cs_new_protected:Npn \__mildate_timezone_nato:n #1 {
+	\tl_set:Nx \__mildate_timezone_tl {
+	\int_case:nnF { #1 }
+      {
+      	{ -12 } { Y }	 
+      	{ -11 } { X }	 
+      	{ -10 } { W }
+      	{ -9 }  { V }	
+      	{ -8 }  { U }	
+      	{ -7 }  { T }
+        { -6 }  { S }	 
+        { -5 }  { R }	
+        { -4 }  { Q }	
+        { -3 }  { P }	
+        { -2 }  { O } 
+        { -1 }  { N } 
+        { 0 }   { Z }  
+        { 1 }   { A }	 
+      	{ 2 }   { B }	 
+      	{ 3 }   { C }
+      	{ 4 }   { D }	
+      	{ 5 }   { E }	
+      	{ 6 }   { F }
+        { 7 }   { G }	 
+        { 8 }   { H }	
+        { 9 }   { I }	
+        { 10 }  { K }
+        { 11 }  { L }		
+        { 12 }  { M } 
+      } { ??? }
+   }
+   %\__mildate_timezone_tl
+}
+\cs_generate_variant:Nn \__mildate_timezone_nato:n { V }
+
+% Time zone abbreviations and their offset to UTC
+\cs_new_protected:Npn \__mildate_timezone_abbrev:n #1 {
+	\int_set:Nn \__mildate_timezone_int {
+	\str_case:nnF { #1 }
+      {
+      	{ PST }  { -8 }	 % Pacific Standard Time
+      	{ PDT }  { -7 }	 % Pacific Daylight Time
+      	{ CST }  { -6 }	 % Central Standard Time
+      	{ MDT }  { -6 }	 % Mountain Daylight Time
+      	{ CDT }  { -5 }	 % Central Daylight Time
+      	{ EST }  { -5 }	 % Eastern Standard Time
+        { GMT }  { 0 }	 % Greenwich Mean Time
+        { UTC }  { 0 }	 % Universal Time Coordinated
+        { WET }  { 0 }	 % Western European Time
+        { CET }  { +1 }	 % Central European Time
+        { WEST } { +1 }  % Western European Summer Time
+        { CEST } { +2 }  % Central European Summer Time
+        { EET }  { +2 }  % Eastern European Time
+        { EEST } { +3 }  % Eastern European Summer Time
+        { TRT }  { +3 }	 % Turkey Time
+      } { 13 }
+   }
+}
+\cs_generate_variant:Nn \__mildate_timezone_abbrev:n { x }
+
 % Fill up integers to two digits 
 \tl_new:N \pad_output_tl
 \cs_new_protected:Npn \__mildate_padinteger:n #1 {
@@ -160,6 +224,27 @@
 		{ \text_uppercase:n { \__mildate_date_month_tl } }
 }
 
+\seq_new:N \l__mildate_timezone_seq
+\cs_new_protected:Npn \__mildate_parse_timezone:n #1 {
+	\IfValueT {#1} {
+		\regex_match:nnT { \A [a-i|k-z|A-I|K-Z] \Z } { #1 } 
+		{ #1 }
+		\regex_match:nnT { \A UTC[+-][0-9]{1,2} \Z } { #1 }
+		{ 
+			\regex_extract_once:nnN { UTC([+-][0-9]{1,2}) } { #1 } \__mildate_timezone_seq
+			\__mildate_timezone_nato:n {\seq_item:Nn \__mildate_timezone_seq {2} } 
+			\__mildate_timezone_tl
+		}
+		\regex_match:nnT { \A [a-zA-Z]{2,5} \Z } { #1 }
+		{ 
+			\regex_extract_once:nnN { \A ([a-zA-Z]{2,5}) \Z } { #1 } \__mildate_timezone_seq
+			\__mildate_timezone_abbrev:x { \seq_item:Nn \__mildate_timezone_seq {2} }
+			\__mildate_timezone_nato:V \__mildate_timezone_int 
+			\__mildate_timezone_tl
+		}
+	}
+}
+
 % Set time in military format
 \NewDocumentCommand\milTime{mo} {
 	\group_begin:
@@ -172,7 +257,8 @@
 	%% minutedefault
 	\__mildate_padinteger:n { \__mildate_time_minute_int }
 	%% timezone
-	\IfValueT {#2}{\regex_match:nnTF { [a-i|k-z|A-I|K-Z] } { #2 } {#2} {?} }
+	%\IfValueT {#2}{\regex_match:nnTF { [a-i|k-z|A-I|K-Z] } { #2 } {#2} {?} }
+	\IfValueT {#2} { \__mildate_parse_timezone:n {#2} }
 	\group_end:
 }
 
@@ -219,7 +305,7 @@
 	% insert time
 	\IfNoValueTF {#2} 
 		{ \milTime{#3}{ \l__mildate_default_timezone_tl} }
-		{\milTime{#3}[#2] }
+		{ \milTime{#3}[#2] }
 	\kern\l__mildate_kern_dim
 	%% month
   	\__mildate_month_string:n { \__mildate_date_month_int } 
