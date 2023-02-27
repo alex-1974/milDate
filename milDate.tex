@@ -86,6 +86,8 @@ Currently german and english are available.
 
 \noindent\marginpar{kern} The individual blocks of the date-time group are set with a small space between them. By default, the \textbf{milDate} package uses 1pt. This spacing can be changed with the \verb+kern+ option if needed. A \emph{kern} is a typographic term for a nonbreakable space between two elements.
 
+\noindent\marginpar{dtg symbol} The boolean option \verb+dtg_symbol+ can be used to manage the display of symbols at odd offsets to the date-time-group. 
+
 \section{Commands}
 
 \noindent\marginpar{milTime} The \textbf{milTime} command sets the time in 24 hour format hhmm without delimiter. The time zone is optional.
@@ -94,6 +96,8 @@ Currently german and english are available.
 \begin{tabular}{ll}
 \verb+\milTime{12:30}[S]+ & \milTime{12:30}[S] \\	% JFK assassinated
 \verb+\milTime{0238}+	  & \milTime{0238} \\		% Titanic hits iceberg
+\verb+\milTime{0238}+	  & \milTime{0238} \\		% Titanic hits iceberg
+\verb+\milTime{0417}[TRT]+ & \milTime{0417}[TRT] \\	% Earthquake Turkey
 \end{tabular}
 
 \medskip\noindent\marginpar{timezone} Time zones are indicated with letters A to I and K to Z. To avoid confusion, J is skipped. Starting from the prime meridian at Greenwich (UTC-0, Greenwich Mean Time \emph{GMT}, Zulu time), counting is eastward from A to M and westward from N to Y.
@@ -138,6 +142,15 @@ UTC & & Example \\
 \bottomrule
 \end{tabular}
 \end{minipage}
+
+\medskip
+Furthermore, the time zones can be specified as an offset from UTC (e.g. UTC+03:00) or in abbreviated time zones (e.g. CEST).
+For time zones that differ by 30 minutes from the whole hour, the time zone closer to the prime meridian is used and an asterisk (*) is added. For a distance of 45 minutes, a lozenge ($^{◆}$) is added.
+Examples are Newfoundland in time zone P* (UTC-03:30), Afghanistan in time zone D* (UTC+04:30) or Nepal in time zone E$^{◆}$ (UTC+05:45).
+Exceptions are the M time zones, which are more than 12 hours apart from UTC and are therefore west of the International Date Line.
+With a deviation of whole hours they are marked with M$^{†}$, with a difference of 30 minutes as M* and with 45 minutes as M$^{◆}$.
+Examples are Line Islands with M$^{†}$ (UTC+14:00) and Chatham Island with M$^{◆}$ (UTC+12:45).
+With the global option \verb+dtg_symbol=false+, the display of the symbols can be disabled.
 
 \bigskip\noindent\marginpar{milToday} The \textbf{milToday} command sets the current date in NATO format
 
