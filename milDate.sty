@@ -145,11 +145,13 @@
 \int_new:N \__integer_int
 \fp_new:N \__fractional_fp
 \cs_new_protected:Npn \__mildate_timezone_nato:n #1 {
-	< #1 >
 	% Get integer part of decimal number
-	\int_set:Nn \__integer_int { \fp_eval:n { floor((#1),0) } }
+	\int_set:Nn \__integer_int { \fp_compare:nTF { #1 >= 0 }
+		{ \fp_eval:n { floor((#1),0) } }
+		{ \fp_eval:n { ceil((#1),0) } }
+	}
 	% Get fractional part of decimal number
-	\fp_set:Nn \__fractional_fp { \fp_eval:n { #1 - \__integer_int } }
+	\fp_set:Nn \__fractional_fp { \fp_eval:n { abs(#1 - \__integer_int) } }
 	% Set NATO code according to integer part [-12;+14]
 	\tl_set:Nx \__mildate_timezone_tl {
 	\int_case:nnF { \__integer_int }
@@ -183,22 +185,19 @@
         { 14 }  { M } % already west of the date line
       } { ??? }
    }
-   | \__mildate_timezone_tl |
-   i \int_use:N \__integer_int |
-   f \fp_use:N \__fractional_fp |
+   \__mildate_timezone_tl
    % UTC hours above 12 (date line) or odd minutes
    \fp_compare:nT { \__integer_int > 12 | \__fractional_fp > 0.0 }
    { 
-   ODD|
    	% UTC west of dateline but full hour
 	\fp_compare:nT { \__fractional_fp == 0.0 }
-   		{ \c__mildate_cross_tl | }
+   		{ \c__mildate_cross_tl }
    	% all UTC up to 30 minutes
   	\fp_compare:nT { \__fractional_fp > 0.0 & \__fractional_fp <= 0.5 }
-   		{ \c__mildate_star_tl | }
+   		{ \c__mildate_star_tl }
    	% all UTC more than 30 minutes
   	\fp_compare:nT { \__fractional_fp > 0.5 & \__fractional_fp < 1.0 }
-   		{ \c__mildate_dagger_tl | }
+   		{ \c__mildate_dagger_tl }
    }
 }
 \cs_generate_variant:Nn \__mildate_timezone_nato:n { V }
@@ -219,8 +218,8 @@
       	{ SDT }  { -10 } % Samoa Daylight Time
       	{ TAHT } { -10 } % Tahiti Time
 		%
-      	{ MART } { -19.5 } % Marquesas Islands Time
-      	{ MIT }  { -19.5 } % Marquesas Islands Time
+      	{ MART } { -9.5 } % Marquesas Islands Time
+      	{ MIT }  { -9.5 } % Marquesas Islands Time
 		%
       	{ AKST } { -9 }  % Alaska Standard Time
       	{ GAMT } { -9 }	 % Gambier Islands Time
@@ -448,7 +447,7 @@
         { TKT }  { +13 } % Tokelau Time
         { TOT }  { +13 } % Tonga Time
         %
-        { NZDT } { +13.75 } % Chatham Daylight Time
+        { CHADT } { +13.75 } % Chatham Daylight Time
         %
         { LINT } { +14 } % Line Islands Time
       } { 20 }
