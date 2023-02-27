@@ -16,6 +16,9 @@
 	lowercase	.initial:n = true,
 	uppercase	.bool_set:N = \l__mildate_uppercase_bool,
 	uppercase	.initial:n = false,
+	dtg_symbol	.bool_set:N = \l_mildate_dtg_symbol_bool,
+	dtg_symbol	.initial:n = true,
+	dtg_symbol	.value_required:n = true,
 }
 
 \ProcessKeysOptions { mildate }
@@ -139,8 +142,8 @@
 % Time zone NATO code according to UTC
 
 \tl_const:Nn \c__mildate_star_tl { * }
-\tl_const:Nn \c__mildate_dagger_tl { $^{◆}$ }
-\tl_const:Nn \c__mildate_cross_tl { $^{†}$ }
+\tl_const:Nn \c__mildate_lozenge_tl { $^{◆}$ }
+\tl_const:Nn \c__mildate_dagger_tl { $^{†}$ }
 
 \int_new:N \__integer_int
 \fp_new:N \__fractional_fp
@@ -186,18 +189,20 @@
       } { ??? }
    }
    \__mildate_timezone_tl
-   % UTC hours above 12 (date line) or odd minutes
-   \fp_compare:nT { \__integer_int > 12 | \__fractional_fp > 0.0 }
-   { 
-   	% UTC west of dateline but full hour
-	\fp_compare:nT { \__fractional_fp == 0.0 }
-   		{ \c__mildate_cross_tl }
-   	% all UTC up to 30 minutes
-  	\fp_compare:nT { \__fractional_fp > 0.0 & \__fractional_fp <= 0.5 }
-   		{ \c__mildate_star_tl }
-   	% all UTC more than 30 minutes
-  	\fp_compare:nT { \__fractional_fp > 0.5 & \__fractional_fp < 1.0 }
-   		{ \c__mildate_dagger_tl }
+   \bool_if:nT { \l_mildate_dtg_symbol_bool } {
+   	% UTC hours above 12 (date line) or odd minutes
+   	\fp_compare:nT { \__integer_int > 12 | \__fractional_fp > 0.0 }
+   	{ 
+   		% UTC west of dateline but full hour
+		\fp_compare:nT { \__fractional_fp == 0.0 }
+   			{ \c__mildate_dagger_tl }
+   		% all UTC up to 30 minutes
+  		\fp_compare:nT { \__fractional_fp > 0.0 & \__fractional_fp <= 0.5 }
+   			{ \c__mildate_star_tl }
+   		% all UTC more than 30 minutes
+  		\fp_compare:nT { \__fractional_fp > 0.5 & \__fractional_fp < 1.0 }
+   			{ \c__mildate_lozenge_tl }
+  	 }
    }
 }
 \cs_generate_variant:Nn \__mildate_timezone_nato:n { V }
@@ -302,6 +307,7 @@
         { DFT }  { +1 }	 % Central European Time
         { IST }  { +1 }	 % Irish Standard Time
         { MET }  { +1 }	 % Middle European Time
+        { MEZ }  { +1 }	 % Mitteleuropäische Zeit
         { WAT }  { +1 }	 % West Africa Time       
         { WEST } { +1 }  % Western European Summer Time
         %
@@ -312,6 +318,7 @@
         { IST }  { +2 }  % Israel Standard Time
         { KALT } { +2 }  % Kaliningrad Time
         { MEST } { +2 }  % Middle European Summer Time
+        { MESZ } { +2 }  % Mitteleuropäische Sommerzeit
         { SAST } { +2 }  % South African Standard Time
         { WAST } { +2 }  % West Africa Summer Time
         %
